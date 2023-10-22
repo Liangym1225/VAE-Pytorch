@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class ELBO(nn.Module):
-    def __init__(self, distribution="mse", latent_dim=2):
+    def __init__(self, distribution="gaussian", latent_dim=2):
         super(ELBO, self).__init__()
         self.distribution = distribution
         self.latent_dim = latent_dim
@@ -19,9 +19,9 @@ class ELBO(nn.Module):
 class Reconstuctionloss(nn.Module):
     def __init__(self, distribution="mse"):
         super(Reconstuctionloss, self).__init__()
-        if distribution == "mse":
+        if distribution == "gaussian":
             self.loss = nn.MSELoss(reduction="sum")
-        elif distribution == "bce":
+        elif distribution == "binomial":
             self.loss = nn.BCELoss(reduction="sum")
 
     def forward(self, output, gt):
