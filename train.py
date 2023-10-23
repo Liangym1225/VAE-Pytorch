@@ -36,16 +36,18 @@ config.save_config()
 if config.logging == "wandb":
     run = wandb.init(
         project="VAE",
-        #config = config
+        dir=config.get_base_dir(),
+        config = config
     )
 
-
+device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+ 
 training_data = datasets.MNIST(
     root="./data", train=True, transform=transforms.ToTensor(), download=True
 )
 training_dataloader = DataLoader(training_data, batch_size=config.batch_size, shuffle=True)
 
-vae = VAE(latent_dim=config.latent_dimension)
+vae = VAE(latent_dim=config.latent_dimension).to(device)
 optimizer = Adam(vae.parameters(),lr=config.learning_rate)
 loss_fn = ELBO(distribution=config.distribution, latent_dim=config.latent_dimension)
 
@@ -57,6 +59,7 @@ for e in trange(1,epochs+1, dynamic_ncols=True):
     train_loss_kl =0.
     train_loss = 0.
     for batch, (X,y) in enumerate(training_dataloader):
+        X = X.to(device)
         z, mu, logsig, output = vae(X)
         loss, loss_rc, loss_kl=loss_fn(mu,logsig,output,X)
 
